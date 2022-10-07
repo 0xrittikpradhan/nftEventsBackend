@@ -10,10 +10,11 @@ const secrets = require("../secrets.json");
 
 const ALCHEMY_Provider = secrets.url;
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
-const app = express();
+const router = express();
 
 const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
 const contractAbi = require("../../blockchain/build/newTokenABI.json");
+const { application } = require("express");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
 
@@ -25,8 +26,10 @@ const uri =
   "mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 
-//Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
+// Get NFT APIs
 
+
+// Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
 
 NFTContract.events
@@ -38,14 +41,14 @@ NFTContract.events
       try {
         client.connect();
         const eventDetails = {
-          Tx_Hash: event.transactionHash,
-          Block_Number: event.blockNumber.toString(),
-          Event_Name: event.event.toString(),
-          Operator_Address: event.returnValues.operator.toString(),
-          From_Address: event.returnValues.from.toString(),
-          To_Address: event.returnValues.to.toString(),
-          Token_Id: event.returnValues.id.toString(),
-          Token_Amount: event.returnValues.value.toString(),
+          txHash: event.transactionHash,
+          blockNumber: event.blockNumber.toString(),
+          eventName: event.event.toString(),
+          operatorAddress: event.returnValues.operator.toString(),
+          fromAddress: event.returnValues.from.toString(),
+          toAddress: event.returnValues.to.toString(),
+          tokenId: event.returnValues.id.toString(),
+          tokenAmount: event.returnValues.value.toString(),
         };
         createListing(client, eventDetails);
       } catch (e) {
@@ -72,21 +75,21 @@ NFTContract.events
           var eventKeys = arr[id];
           var value;
 
-          if(eventKeys.Token_Amount !== undefined) {
-            value = parseInt(eventKeys.Token_Amount) + parseInt(event.returnValues.values[i]);
+          if(eventKeys.tokenAmount !== undefined) {
+            value = parseInt(eventKeys.tokenAmount) + parseInt(event.returnValues.values[i]);
           }
           else {
             value = event.returnValues.values[i];
           }
           var eventDetails = {
-            Tx_Hash: event.transactionHash,
-            Block_Number: event.blockNumber.toString(),
-            Event_Name: event.event.toString(),
-            Operator_Address: event.returnValues.operator.toString(),
-            From_Address: event.returnValues.from.toString(),
-            To_Address: event.returnValues.to.toString(),
-            Token_Id: id.toString(),
-            Token_Amount: value.toString(),
+            txHash: event.transactionHash,
+            blockNumber: event.blockNumber.toString(),
+            eventName: event.event.toString(),
+            operatorAddress: event.returnValues.operator.toString(),
+            fromAddress: event.returnValues.from.toString(),
+            toAddress: event.returnValues.to.toString(),
+            tokenId: id.toString(),
+            tokenAmount: value.toString(),
           };
           arr[id] = eventDetails;
         }
@@ -103,10 +106,10 @@ NFTContract.events
 
 async function parseEventsArray(client, eventsArr) {
   for(let i= 0; i< 3; i++) {
-    if(eventsArr[i].Token_Amount === undefined) {
+    if(eventsArr[i].tokenAmount === undefined) {
       continue;
     }
-    console.log("createListing for Token " + eventsArr[i].Token_Id );
+    console.log("createListing for Token " + eventsArr[i].tokenId );
     createListing(client, eventsArr[i]);
   }
 }
@@ -116,8 +119,8 @@ async function createListing(client, eventDetails) {
     .db("Addresses")
     .collection("TransferEvent")
     .findOne({
-      Tx_Hash: eventDetails.Tx_Hash,
-      Token_Id: eventDetails.Token_Id,
+      txHash: eventDetails.txHash,
+      tokenId: eventDetails.tokenId,
     });
 
   if (checkDuplicateTxHash === null) {
@@ -135,4 +138,8 @@ async function createListing(client, eventDetails) {
     console.log("Hash Already Exists");
   }
 }
+
+// router.listen(3000, () => {
+//   console.log("Server is up on port: 3000");
+// });
 
