@@ -13,7 +13,6 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
 const app = express();
 
 const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
-// const contractAbi = require("../build/newTokenABI.json");
 const contractAbi = require("../../blockchain/build/newTokenABI.json");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
@@ -120,16 +119,7 @@ async function createListing(client, eventDetails) {
       Tx_Hash: eventDetails.Tx_Hash,
       Token_Id: eventDetails.Token_Id,
     });
-  // console.log(checkDuplicateTxHash);
-  // const checkSameTokeninBatch = await client
-  //   .db("Addresses")
-  //   .collection("TransferEvent")
-  //   .findOne({
-  //     Tx_Hash: eventDetails.Tx_Hash,
-  //     Token_Id: eventDetails.Token_Id,
-  //     Block_Number: eventDetails.Block_Number,
-  //   });
-  // // console.log(checkSameTokeninBatch);
+
   if (checkDuplicateTxHash === null) {
     console.log("Inserting into DB Collection...");
     const result = await client
@@ -140,30 +130,9 @@ async function createListing(client, eventDetails) {
       `New listing created with the following Id: ${result.insertedId}`
     );
   } 
-  // else if (
-  //   checkDuplicateTxHash !== null &&
-  //   (checkSameTokeninBatch !== null) &
-  //     (eventDetails.Event_Name === "TransferBatch")
-  // ) {
-  //   console.log("Updating existing record...");
-  //   const tokenSum = (
-  //     parseInt(checkSameTokeninBatch.Token_Amount) +
-  //     parseInt(eventDetails.Token_Amount)
-  //   ).toString();
-  //   const objectId = checkSameTokeninBatch._id;
-  //   const result = await client
-  //     .db("Addresses")
-  //     .collection("TransferEvent")
-  //     .updateOne(
-  //       { _id: objectId },
-  //       { $set: { Token_Amount: tokenSum } },
-  //       { upsert: true }
-  //     );
-  //   console.log("Record Updated, Id: " + objectId);
-  // } 
+
   else {
     console.log("Hash Already Exists");
   }
 }
 
-// main().catch(console.error);
