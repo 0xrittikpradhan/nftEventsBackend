@@ -27,10 +27,24 @@ const client = new MongoClient(uri);
 
 // Get NFT APIs
 
-// app.get("/getByTokenId:tokenId", (req, res) => {
-//   if (!req.query.tokenId) {
-//   }
-// });
+//tokenTransfers
+app.get("/getByTokenId/:tokenId", (req, res) => {
+  if (req.params.tokenId) {
+    const reqTokenId = req.params.tokenId;
+    displayTokenTransfers(client, reqTokenId);
+  }
+});
+
+//tokenOwners
+// app.get("/")
+
+async function displayTokenTransfers(client, reqTokenId) {
+  // var result = await client.db("Addresses").collection("TransferEvent").find({
+  //   tokenId: reqTokenId
+  // });
+  // console.log(result);
+  console.log("TokenId : " + reqTokenId);
+}
 
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
@@ -137,6 +151,6 @@ async function createListing(client, eventDetails) {
   }
 }
 
-// app.listen(3000, () => {
-//   console.log("Server is up on port: 3000");
-// });
+app.listen(3000, () => {
+  console.log("Server is up on port: 3000");
+});
