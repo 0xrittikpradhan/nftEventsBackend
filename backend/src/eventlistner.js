@@ -10,11 +10,10 @@ const secrets = require("../secrets.json");
 
 const ALCHEMY_Provider = secrets.url;
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
-const router = express();
+const app = express();
 
 const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
 const contractAbi = require("../../blockchain/build/newTokenABI.json");
-const { application } = require("express");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
 
@@ -28,6 +27,10 @@ const client = new MongoClient(uri);
 
 // Get NFT APIs
 
+// app.get("/getByTokenId:tokenId", (req, res) => {
+//   if (!req.query.tokenId) {
+//   }
+// });
 
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
@@ -53,7 +56,7 @@ NFTContract.events
         createListing(client, eventDetails);
       } catch (e) {
         console.error(e);
-      } 
+      }
     }
   )
   .on("connected", (subscriptionId) => {
@@ -68,17 +71,18 @@ NFTContract.events
     (error, event) => {
       try {
         client.connect();
-        var arr = {0: {}, 1: {}, 2: {}};
-        for(let i=0; i< event.returnValues.ids.length; i++) {
-
+        var arr = {};
+        for (let i = 0; i < event.returnValues.ids.length; i++) {
           var id = event.returnValues.ids[i];
           var eventKeys = arr[id];
           var value;
 
-          if(eventKeys.tokenAmount !== undefined) {
-            value = parseInt(eventKeys.tokenAmount) + parseInt(event.returnValues.values[i]);
-          }
-          else {
+          // console.log(eventKeys);
+          if (eventKeys !== undefined && eventKeys.tokenAmount !== undefined) {
+            value =
+              parseInt(eventKeys.tokenAmount) +
+              parseInt(event.returnValues.values[i]);
+          } else {
             value = event.returnValues.values[i];
           }
           var eventDetails = {
@@ -94,8 +98,7 @@ NFTContract.events
           arr[id] = eventDetails;
         }
         parseEventsArray(client, arr);
-      } 
-      catch (e) {
+      } catch (e) {
         console.error(e);
       }
     }
@@ -105,13 +108,10 @@ NFTContract.events
   });
 
 async function parseEventsArray(client, eventsArr) {
-  for(let i= 0; i< 3; i++) {
-    if(eventsArr[i].tokenAmount === undefined) {
-      continue;
-    }
-    console.log("createListing for Token " + eventsArr[i].tokenId );
-    createListing(client, eventsArr[i]);
-  }
+  Object.values(eventsArr).forEach(eventDetails => {
+    console.log("createListing for Token " + eventDetails.tokenId);
+    createListing(client, eventDetails);
+  });
 }
 
 async function createListing(client, eventDetails) {
@@ -132,14 +132,11 @@ async function createListing(client, eventDetails) {
     console.log(
       `New listing created with the following Id: ${result.insertedId}`
     );
-  } 
-
-  else {
+  } else {
     console.log("Hash Already Exists");
   }
 }
 
-// router.listen(3000, () => {
+// app.listen(3000, () => {
 //   console.log("Server is up on port: 3000");
 // });
-
