@@ -39,8 +39,25 @@ app.get("/getByTokenId/:tokenId", async (req, res) => {
 });
 
 //tokenOwners
-app.get("/getTokenOwners", (req, res) => {
-  displayTokenOwners(client);
+app.get("/getTokenOwners/:tokenId", async (req, res) => {
+  // displayTokenOwners(client);
+  if (req.params.tokenId) {
+    ownersArr = {}
+    const reqTokenId = req.params.tokenId;
+    const data = await displayTokenTransfers(client, reqTokenId);
+    data.forEach(element => {
+      var address = element.toAddress;
+      if(ownersArr.address !== undefined) {
+        const tokenAmount = ownersArr.address.tokenAmount;
+        const newTokenAmount = parseInt(tokenAmount) + parseInt(element.tokenAmount);
+        ownersArr.address.tokenAmount = newTokenAmount.toString();
+      }
+      else {
+        ownersArr.address = element;
+      }
+    });
+    return res.send(ownersArr);
+  }
 });
 
 async function displayTokenTransfers(client, reqTokenId) {
@@ -58,16 +75,17 @@ async function displayTokenTransfers(client, reqTokenId) {
   return arr;
 }
 
-async function displayTokenOwners(client) {
-  const cursor = client.db("Addresses").collection("TrasnferEvent").find();
-  if (!(await cursor.hasNext())) {
-    console.log("No more records found");
-  }
-  // await cursor.forEach(console.dir);
-  await cursor.forEach((element) => {
-    console.log(element);
-  });
-}
+// async function displayTokenOwners(client) {
+
+//   const cursor = client.db("Addresses").collection("TrasnferEvent").find();
+//   if (!(await cursor.hasNext())) {
+//     console.log("No more records found");
+//   }
+//   // await cursor.forEach(console.dir);
+//   await cursor.forEach((element) => {
+//     console.log(element);
+//   });
+// }
 
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
