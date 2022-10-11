@@ -5,10 +5,16 @@
 const { MongoClient } = require("mongodb");
 const express = require("express");
 const Web3 = require("web3");
-// require("dotenv").config();
+require("dotenv").config();
 
-const ALCHEMY_Provider = "wss://eth-goerli.g.alchemy.com/v2/oANSfkvj_viMxSA0rRfm3Ua00sma-WT6";
+// const ALCHEMY_Provider = `${process.env.ALCHEMY_GOERLI_URL}`;
+// console.log(ALCHEMY_Provider);
+
+const ALCHEMY_Provider =
+  "wss://eth-goerli.g.alchemy.com/v2/oANSfkvj_viMxSA0rRfm3Ua00sma-WT6";
+
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
+
 const app = express();
 const port = process.env.PORT || 3000; //POR = Port (heroku) || fallbackvalue (port 3000 - local)
 
@@ -28,27 +34,36 @@ const client = new MongoClient(uri);
 // Get NFT APIs
 
 //tokenTransfers
-app.get("/getByTokenId/:tokenId", (req, res) => {
+app.get("/getByTokenId/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
     const reqTokenId = req.params.tokenId;
-    displayTokenTransfers(client, reqTokenId);
+    const data = await displayTokenTransfers(client, reqTokenId);
+    return res.send(data);
   }
 });
 
 //tokenOwners
-// app.get("/")
+app.get("/getTokenOwners", (req, res) => {
+  displayTokenOwners(client);
+});
 
 async function displayTokenTransfers(client, reqTokenId) {
-  // var result = await client.db("Addresses").collection("TransferEvent").find({
-  //   tokenId: reqTokenId
-  // });
-  // console.log(result);
-  // console.log("TokenId : " + reqTokenId);
-
+  const arr = [];
   const cursor = client
     .db("Addresses")
     .collection("TransferEvent")
     .find({ tokenId: reqTokenId });
+
+  if (await cursor.hasNext()) {
+    await cursor.forEach((element) => {
+      arr.push(element);
+    });
+  }
+  return arr;
+}
+
+async function displayTokenOwners(client) {
+  const cursor = client.db("Addresses").collection("TrasnferEvent").find();
   if (!(await cursor.hasNext())) {
     console.log("No more records found");
   }
