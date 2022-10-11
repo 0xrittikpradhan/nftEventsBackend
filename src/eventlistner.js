@@ -5,10 +5,9 @@
 const { MongoClient } = require("mongodb");
 const express = require("express");
 const Web3 = require("web3");
-const secrets = require("../secrets.json");
 // require("dotenv").config();
 
-const ALCHEMY_Provider = secrets.url;
+const ALCHEMY_Provider = "wss://eth-goerli.g.alchemy.com/v2/oANSfkvj_viMxSA0rRfm3Ua00sma-WT6";
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
 const app = express();
 const port = process.env.PORT || 3000; //POR = Port (heroku) || fallbackvalue (port 3000 - local)
