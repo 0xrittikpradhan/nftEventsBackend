@@ -14,7 +14,7 @@ const app = express();
 const port = process.env.PORT || 3000; //POR = Port (heroku) || fallbackvalue (port 3000 - local)
 
 const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
-const contractAbi = require("../../blockchain/build/newTokenABI.json");
+const contractAbi = require("../build/newTokenABI.json");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
 
@@ -46,12 +46,15 @@ async function displayTokenTransfers(client, reqTokenId) {
   // console.log(result);
   // console.log("TokenId : " + reqTokenId);
 
-  const cursor = client.db("Addresses").collection("TransferEvent").find({ tokenId: reqTokenId });
-  if(!(await cursor.hasNext())) {
-    console.log("No record found");
+  const cursor = client
+    .db("Addresses")
+    .collection("TransferEvent")
+    .find({ tokenId: reqTokenId });
+  if (!(await cursor.hasNext())) {
+    console.log("No more records found");
   }
   // await cursor.forEach(console.dir);
-  await cursor.forEach(element => {
+  await cursor.forEach((element) => {
     console.log(element);
   });
 }
