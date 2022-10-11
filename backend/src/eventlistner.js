@@ -43,7 +43,16 @@ async function displayTokenTransfers(client, reqTokenId) {
   //   tokenId: reqTokenId
   // });
   // console.log(result);
-  console.log("TokenId : " + reqTokenId);
+  // console.log("TokenId : " + reqTokenId);
+
+  const cursor = client.db("Addresses").collection("TransferEvent").find({ tokenId: reqTokenId });
+  if((await cursor.hasNext())) {
+    console.log("No record found");
+  }
+  // await cursor.forEach(console.dir);
+  await cursor.forEach(element => {
+    console.log(element);
+  });
 }
 
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
@@ -122,7 +131,7 @@ NFTContract.events
   });
 
 async function parseEventsArray(client, eventsArr) {
-  Object.values(eventsArr).forEach(eventDetails => {
+  Object.values(eventsArr).forEach((eventDetails) => {
     console.log("createListing for Token " + eventDetails.tokenId);
     createListing(client, eventDetails);
   });
