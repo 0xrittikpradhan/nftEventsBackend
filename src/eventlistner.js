@@ -8,10 +8,6 @@ const Web3 = require("web3");
 require("dotenv").config();
 
 const ALCHEMY_Provider = `${process.env.ALCHEMY_GOERLI_URL}`;
-console.log(ALCHEMY_Provider);
-
-// const ALCHEMY_Provider =
-//   "wss://eth-goerli.g.alchemy.com/v2/oANSfkvj_viMxSA0rRfm3Ua00sma-WT6";
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
 
