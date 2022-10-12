@@ -5,14 +5,14 @@
     "cursor": null,
     "result": [
       {
-        "token_address": "0xfc86b39464df08e1d55e492af2bdf273975f9e6f", //
-        "token_id": "1", //
-        "owner_of": "0x2544aa9f26e331ff7fa88e69da582f5f1781d55b", //
+        "token_address": "0xfc86b39464df08e1d55e492af2bdf273975f9e6f", 
+        "token_id": "1", 
+        "owner_of": "0x2544aa9f26e331ff7fa88e69da582f5f1781d55b",
         "block_number": "7727229",
         "block_number_minted": "7720692",
         "token_hash": "f7a52ea06398cff48b4f540cbca904ec",
-        "amount": "412", //
-        "contract_type": "ERC1155", //
+        "amount": "412", 
+        "contract_type": "ERC1155",
         "name": null,
         "symbol": null,
         "token_uri": "https://game.example/api/item/0000000000000000000000000000000000000000000000000000000000000001.json",

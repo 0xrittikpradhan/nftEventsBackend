@@ -12,7 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000; //POR = Port (heroku) || fallbackvalue (port 3000 - local)
 
 // const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
-const contractAddress = "0x4331Ff42aACCBcFe7bC54D7af269616F6EfafEf7";
+const contractAddress = "0x005799C697B5789Ba480905094388Fdb85C7BA3D";
 const contractAbi = require("../build/nftContractABI.json");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
@@ -40,6 +40,7 @@ app.get("/getNFTTransfers/:tokenId", async (req, res) => {
 app.get("/getNFTOwners/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
     ownersArr = {};
+    finalOwnersArr = {};
     const reqTokenId = req.params.tokenId;
     const data = await getTokenTransfers(client, reqTokenId);
 
@@ -60,7 +61,18 @@ app.get("/getNFTOwners/:tokenId", async (req, res) => {
         subtractSenderAmount(ownersArr, element);
       }
     });
-    return res.send(Object.values(ownersArr));
+
+    (Object.values(ownersArr)).forEach(element => {
+      finalOwnersArr[element.toAddress] = {
+        "ownerAddress": element.toAddress, 
+        "tokenAddress": element.tokenAddress, 
+        "tokenId": element.tokenId, 
+        "tokenAmount": element.tokenAmount, 
+        "contractType": element.contractType
+      }
+      
+    });
+    return res.send(Object.values(finalOwnersArr));
   }
 });
 
