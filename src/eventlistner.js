@@ -45,14 +45,14 @@ app.get("/getNFTOwners/:tokenId", async (req, res) => {
     const reqTokenId = req.params.tokenId;
     const data = await displayTokenTransfers(client, reqTokenId);
     data.forEach(element => {
-      var address = element.toAddress;
-      if(ownersArr.address !== undefined) {
-        const tokenAmount = ownersArr.address.tokenAmount;
+      var key = element.toAddress;
+      if(ownersArr[key] !== undefined && ownersArr[key].toAddress !== undefined ) {
+        const tokenAmount = ownersArr[key].tokenAmount;
         const newTokenAmount = parseInt(tokenAmount) + parseInt(element.tokenAmount);
-        ownersArr.address.tokenAmount = newTokenAmount.toString();
+        ownersArr[key].tokenAmount = newTokenAmount.toString();
       }
       else {
-        ownersArr.address = element;
+        ownersArr[key] = element;
       }
     });
     return res.send(ownersArr);
