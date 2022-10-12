@@ -1,5 +1,4 @@
-// const hre = require('hardhat');
-// const { ethers } = require("hardhat");
+
 // const mongoose = require("mongoose");
 
 const { MongoClient } = require("mongodb");
@@ -14,8 +13,9 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
 const app = express();
 const port = process.env.PORT || 3000; //POR = Port (heroku) || fallbackvalue (port 3000 - local)
 
-const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
-const contractAbi = require("../build/newTokenABI.json");
+// const contractAddress = "0xfC86b39464DF08e1d55E492AF2BdF273975f9e6F";
+const contractAddress = "0x4331Ff42aACCBcFe7bC54D7af269616F6EfafEf7";
+const contractAbi = require("../build/nftContractABI.json");
 
 const NFTContract = new web3.eth.Contract(contractAbi, contractAddress);
 
@@ -30,7 +30,7 @@ const client = new MongoClient(uri);
 // Get NFT APIs
 
 //tokenTransfers
-app.get("/getByTokenId/:tokenId", async (req, res) => {
+app.get("/getNFTTransfers/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
     const reqTokenId = req.params.tokenId;
     const data = await displayTokenTransfers(client, reqTokenId);
@@ -39,8 +39,7 @@ app.get("/getByTokenId/:tokenId", async (req, res) => {
 });
 
 //tokenOwners
-app.get("/getTokenOwners/:tokenId", async (req, res) => {
-  // displayTokenOwners(client);
+app.get("/getNFTOwners/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
     ownersArr = {}
     const reqTokenId = req.params.tokenId;
@@ -74,18 +73,6 @@ async function displayTokenTransfers(client, reqTokenId) {
   }
   return arr;
 }
-
-// async function displayTokenOwners(client) {
-
-//   const cursor = client.db("Addresses").collection("TrasnferEvent").find();
-//   if (!(await cursor.hasNext())) {
-//     console.log("No more records found");
-//   }
-//   // await cursor.forEach(console.dir);
-//   await cursor.forEach((element) => {
-//     console.log(element);
-//   });
-// }
 
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
