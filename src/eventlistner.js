@@ -1,4 +1,3 @@
-
 // const mongoose = require("mongoose");
 
 const { MongoClient } = require("mongodb");
@@ -7,7 +6,6 @@ const Web3 = require("web3");
 require("dotenv").config();
 
 const ALCHEMY_Provider = `${process.env.ALCHEMY_GOERLI_URL}`;
-
 const web3 = new Web3(new Web3.providers.WebsocketProvider(ALCHEMY_Provider));
 
 const app = express();
@@ -33,7 +31,7 @@ const client = new MongoClient(uri);
 app.get("/getNFTTransfers/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
     const reqTokenId = req.params.tokenId;
-    const data = await displayTokenTransfers(client, reqTokenId);
+    const data = await getTokenTransfers(client, reqTokenId);
     return res.send(data);
   }
 });
@@ -41,25 +39,45 @@ app.get("/getNFTTransfers/:tokenId", async (req, res) => {
 //tokenOwners
 app.get("/getNFTOwners/:tokenId", async (req, res) => {
   if (req.params.tokenId) {
-    ownersArr = {}
+    ownersArr = {};
     const reqTokenId = req.params.tokenId;
-    const data = await displayTokenTransfers(client, reqTokenId);
-    data.forEach(element => {
+    const data = await getTokenTransfers(client, reqTokenId);
+
+    data.forEach((element) => {
       var key = element.toAddress;
-      if(ownersArr[key] !== undefined && ownersArr[key].toAddress !== undefined ) {
-        const tokenAmount = ownersArr[key].tokenAmount;
-        const newTokenAmount = parseInt(tokenAmount) + parseInt(element.tokenAmount);
-        ownersArr[key].tokenAmount = newTokenAmount.toString();
-      }
-      else {
+      if (
+        ownersArr[key] !== undefined &&
+        ownersArr[key].toAddress !== undefined
+      ) {
+        const receiverAmount = ownersArr[key].tokenAmount;
+
+        const newReceiverAmount = parseInt(receiverAmount) + parseInt(element.tokenAmount);
+        ownersArr[key].tokenAmount = newReceiverAmount.toString();
+        subtractSenderAmount(ownersArr, element);
+
+      } else {
         ownersArr[key] = element;
+        subtractSenderAmount(ownersArr, element);
       }
     });
-    return res.send(ownersArr);
+    return res.send(Object.values(ownersArr));
   }
 });
 
-async function displayTokenTransfers(client, reqTokenId) {
+async function subtractSenderAmount(ownersArr, element) {
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+  const fromAddress = element.fromAddress;
+
+  if (fromAddress !== ZERO_ADDRESS) {
+    const senderAmount = ownersArr[fromAddress].tokenAmount;
+    const newSenderAmount =
+      parseInt(senderAmount) - parseInt(element.tokenAmount);
+    ownersArr[fromAddress].tokenAmount = newSenderAmount.toString();
+  }
+}
+
+async function getTokenTransfers(client, reqTokenId) {
   const arr = [];
   const cursor = client
     .db("Addresses")
@@ -77,6 +95,8 @@ async function displayTokenTransfers(client, reqTokenId) {
 // Listning Transfer Events which are being emitted on ERC1155 Token Transfer.
 // await mongoose.connect("mongodb+srv://0xrittikpradhan:s3ni79lQcElpJS4v@cluster0.fuglox2.mongodb.net/?retryWrites=true&w=majority");
 
+//tokenURI
+//contractType
 NFTContract.events
   .TransferSingle(
     // {
@@ -85,9 +105,12 @@ NFTContract.events
     (error, event) => {
       try {
         client.connect();
+        console.log(event);
         const eventDetails = {
           txHash: event.transactionHash,
           blockNumber: event.blockNumber.toString(),
+          tokenAddress: contractAddress,
+          contractType: "ERC1155",
           eventName: event.event.toString(),
           operatorAddress: event.returnValues.operator.toString(),
           fromAddress: event.returnValues.from.toString(),
@@ -113,6 +136,7 @@ NFTContract.events
     (error, event) => {
       try {
         client.connect();
+        console.log(event);
         var arr = {};
         for (let i = 0; i < event.returnValues.ids.length; i++) {
           var id = event.returnValues.ids[i];
@@ -130,6 +154,8 @@ NFTContract.events
           var eventDetails = {
             txHash: event.transactionHash,
             blockNumber: event.blockNumber.toString(),
+            tokenAddress: contractAddress,
+            contractType: "ERC1155",
             eventName: event.event.toString(),
             operatorAddress: event.returnValues.operator.toString(),
             fromAddress: event.returnValues.from.toString(),
@@ -181,4 +207,4 @@ async function createListing(client, eventDetails) {
 
 app.listen(port, () => {
   console.log("Server is up on port " + port);
-}); //
+});
